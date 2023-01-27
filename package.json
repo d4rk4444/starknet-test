@@ -1,0 +1,17 @@
+{
+  "name": "starknet-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "d4rk444",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "console-stamp": "^3.1.0",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "readline-sync": "^1.4.10"
+  }
+}
