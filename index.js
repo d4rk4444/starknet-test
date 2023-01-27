@@ -32,7 +32,16 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     console.log(chalk.yellow(`Bridge ETH to Starknet`));
     await dataBridgeETHToStarknet(rpc.Ethereum, addressStarknet, addressEthereum).then(async(res) => {
         await getGasPriceEthereum().then(async(fee) => {
-            await sendEVMTX(rpc.Ethereum, 2, res.estimateGas, null, fee.maxFee, fee.maxPriorityFee, chainContract.Ethereum.StarknetBridge, amountETH, res, privateKeyEthereum);
+            await sendEVMTX(rpc.Ethereum,
+                2,
+                res.estimateGas,
+                null,
+                fee.maxFee,
+                fee.maxPriorityFee,
+                chainContract.Ethereum.StarknetBridge,
+                amountETH,
+                res,
+                privateKeyEthereum);
         });
     });
     await timeout(pauseTime);
@@ -217,8 +226,7 @@ const withdrawETHFromBridge = async(amount, privateKeyEthereum) => {
             await bridgeETHFromStarknet(walletETH[i], walletSTARK[i]);
             console.log('Process End!');
         } else if (stage[index] == stage[4]) {
-            const data = fs.readFileSync('amountBridge.txt', "utf-8");
-            const amountBridge = data.replace(/[^0-9\n]/g,'').split('\n');
+            const amountBridge = parseFile('amountBridge.txt');
             await withdrawETHFromBridge(amountBridge[i], walletETH[i]);
             console.log('Process End!');
         }
