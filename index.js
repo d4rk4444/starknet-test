@@ -40,7 +40,7 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                 fee.maxPriorityFee,
                 chainContract.Ethereum.StarknetBridge,
                 amountETH,
-                res,
+                res.encodeABI,
                 privateKeyEthereum);
         });
     });
