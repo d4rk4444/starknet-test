@@ -169,7 +169,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
     const addressEthereum = privateToAddress(privateKeyEthereum);
 
     console.log(chalk.yellow(`Withdraw ${amountETH / 10**18}ETH from Stargate`));
-    await dataWithdrawFromBridge(amountETH, addressEthereum).then(async(res) => {
+    await dataWithdrawFromBridge(rpc.Ethereum, amountETH, addressEthereum).then(async(res) => {
         await getGasPriceEthereum().then(async(fee) => {
             await sendEVMTX(rpc.Ethereum,
                 2,
