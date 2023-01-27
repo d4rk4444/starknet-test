@@ -29,7 +29,7 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     });
 
     //BRIDGE ETH TO STARKNET
-    console.log(chalk.yellow(`Bridge ETH to Starknet`));
+    console.log(chalk.yellow(`Bridge ${amountETH / 10**18}ETH to Starknet`));
     await dataBridgeETHToStarknet(rpc.Ethereum, addressStarknet, addressEthereum).then(async(res) => {
         await getGasPriceEthereum().then(async(fee) => {
             await sendEVMTX(rpc.Ethereum,
@@ -165,11 +165,11 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     await timeout(pauseTime);
 }
 
-const withdrawETHFromBridge = async(amount, privateKeyEthereum) => {
+const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
     const addressEthereum = privateToAddress(privateKeyEthereum);
 
-    console.log(chalk.yellow(`Withdraw ETH from Stargate`));
-    await dataWithdrawFromBridge(amount, addressEthereum).then(async(res) => {
+    console.log(chalk.yellow(`Withdraw ${amountETH / 10**18}ETH from Stargate`));
+    await dataWithdrawFromBridge(amountETH, addressEthereum).then(async(res) => {
         await getGasPriceEthereum().then(async(fee) => {
             await sendEVMTX(rpc.Ethereum,
                 2,
