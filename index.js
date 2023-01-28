@@ -155,7 +155,7 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
 
         await dataBridgeETHFromStarknet(addressEthereum, 1).then(async(payload) => {
             await estimateInvokeMaxFee(payload, privateKeyStarknet).then(async(maxFee) => {
-                const randomAmount = generateRandomAmount(2 * 10**8, 5 * 10**8, 0);
+                const randomAmount = generateRandomAmount(2 * 10**12, 5 * 10**12, 0);
                 const amountETH = subtract( subtract(res, maxFee), randomAmount);
                 payload = await dataBridgeETHFromStarknet(addressEthereum, amountETH);
                 try {
