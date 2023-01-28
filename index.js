@@ -1,5 +1,6 @@
 import { rpc, chainContract, timeout, shuffle, parseFile, generateRandomAmount } from 'tools-d4rk444/other.js';
 import { sendEVMTX,
+    deployStarknetWallet,
     privateToStarknetAddress,
     getAmountTokenStark,
     sendTransactionStarknet,
@@ -37,7 +38,7 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                 res.estimateGas,
                 null,
                 fee.maxFee,
-                fee.maxPriorityFee,
+                parseFloat(fee.maxPriorityFee).toFixed(4),
                 chainContract.Ethereum.StarknetBridge,
                 amountETH,
                 res.encodeABI,
@@ -157,8 +158,10 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                 const randomAmount = generateRandomAmount(2 * 10**8, 5 * 10**8, 0);
                 const amountETH = subtract( subtract(res, maxFee), randomAmount);
                 payload = await dataBridgeETHFromStarknet(addressEthereum, amountETH);
-                await sendTransactionStarknet(payload, privateKeyStarknet);
-                fs.writeFileSync("amountBridge.txt", `${amountETH}\n`, { flag: 'a+' });
+                try {
+                    await sendTransactionStarknet(payload, privateKeyStarknet);
+                    fs.writeFileSync("amountBridge.txt", `${amountETH}\n`, { flag: 'a+' });
+                } catch {};
             });
         });
     });
@@ -176,7 +179,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
                 res.estimateGas,
                 null,
                 fee.maxFee,
-                fee.maxPriorityFee,
+                parseFloat(fee.maxPriorityFee).toFixed(4),
                 chainContract.Ethereum.StarknetBridge,
                 null,
                 res.encodeABI,
@@ -195,7 +198,8 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
         'Main part [MySwap/StarknetId/Nostra Finance]',
         'Withdraw liquidity/Swap USDC to ETH [MySwap]',
         'Bridge to Ethereum',
-        'Withdraw ETH from Stargate'
+        'Withdraw ETH from Stargate',
+        'Deploy Account',
     ];
     const index = readline.keyInSelect(stage, 'Choose stage!');
     if (index == -1) { process.exit() };
@@ -203,7 +207,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
 
     for (let i = 0; i < walletSTARK.length; i++) {
         try {
-            console.log(`Wallet ETH: ${privateToAddress(walletETH[i])}, Wallet Starknet: ${await privateToStarknetAddress(walletSTARK[i])}`);
+            console.log(chalk.blue(`Wallet ${i+1} Wallet ETH: ${privateToAddress(walletETH[i])}, Wallet Starknet: ${await privateToStarknetAddress(walletSTARK[i])}`));
         } catch (err) {
             throw new Error('Error: Add Private Keys!');
         }
@@ -211,24 +215,23 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
 
         if (stage[index] == stage[0]) {
             await bridgeETHToStarknet(walletETH[i], walletSTARK[i]);
-            console.log('Process End!');
         } else if (stage[index] == stage[1]) {
             shuffle(mainPart);
             for (let s = 0; s < mainPart.length; s++) {
                 await mainPart[s](walletSTARK[i]);
                 await timeout(pauseTime);
             }
-            console.log('Process End!');
         } else if (stage[index] == stage[2]) {
             await mySwapEnd(walletSTARK[i]);
-            console.log('Process End!');
         } else if (stage[index] == stage[3]) {
             await bridgeETHFromStarknet(walletETH[i], walletSTARK[i]);
-            console.log('Process End!');
         } else if (stage[index] == stage[4]) {
             const amountBridge = parseFile('amountBridge.txt');
             await withdrawETHFromBridge(amountBridge[i], walletETH[i]);
-            console.log('Process End!');
+        } else if (stage[index] == stage[5]) {
+            await deployStarknetWallet(walletSTARK[i]);
+            await timeout(pauseTime);
         }
     }
+    console.log(chalk.bgMagentaBright('Process End!'));
 })();
