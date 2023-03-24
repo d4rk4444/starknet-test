@@ -36,7 +36,7 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
             await sendEVMTX(rpc.Ethereum,
                 2,
                 res.estimateGas,
-                null,
+                '0',
                 fee.maxFee,
                 fee.maxPriorityFee,
                 chainContract.Ethereum.StarknetBridge,
@@ -177,7 +177,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
             await sendEVMTX(rpc.Ethereum,
                 2,
                 res.estimateGas,
-                null,
+                '0',
                 fee.maxFee,
                 fee.maxPriorityFee,
                 chainContract.Ethereum.StarknetBridge,
@@ -196,9 +196,14 @@ const withdrawETHToSubWallet = async(toAddress, privateKey) => {
             let amountETH = subtract(res, 21000 * multiply(add(res1.maxFee, res1.maxPriorityFee), 10**9));
             amountETH = subtract(amountETH, generateRandomAmount(1 * 10**12, 3 * 10**12, 0));
             console.log(chalk.yellow(`Send ${amountETH / 10**18}ETH to ${toAddress} OKX`));
-            await sendEVMTX(rpc.Ethereum, 2, 21000, null, res1.maxFee, res1.maxPriorityFee, toAddress, amountETH, null, privateKey);
+            await sendEVMTX(rpc.Ethereum, 2, 21000, '0', res1.maxFee, res1.maxPriorityFee, toAddress, amountETH, null, privateKey);
         });
     });
+}
+
+const getStarknetAddress = async(privateKeyStarknet) => {
+    const address = await privateToStarknetAddress(privateKeyStarknet);
+    console.log(`Address: ${address}`);
 }
 
 (async() => {
@@ -214,6 +219,7 @@ const withdrawETHToSubWallet = async(toAddress, privateKey) => {
         'Withdraw ETH from Stargate',
         'Send to SubWallet OKX',
         'Deploy Account',
+        'Get Starknet Address',
     ];
     const index = readline.keyInSelect(stage, 'Choose stage!');
     if (index == -1) { process.exit() };
@@ -242,6 +248,8 @@ const withdrawETHToSubWallet = async(toAddress, privateKey) => {
             await withdrawETHToSubWallet(walletOKX[i], walletETH[i]);
         } else if (stage[index] == stage[6]) {
             await deployStarknetWallet(walletSTARK[i]);
+        } else if (stage[index] == stage[7]) {
+            await getStarknetAddress(walletSTARK[i]);
         }
         await timeout(pauseTime);
     }
