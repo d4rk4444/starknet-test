@@ -7,7 +7,7 @@ import { sendEVMTX,
     getGasPriceEthereum,
     getApprovedStarknetId, dataMintStarknetId, numberToHex, getETHAmount, privateToAddress, estimateInvokeMaxFee } from 'tools-d4rk444/web3.js';
 import { dataSwapEthToUsdc, dataSwapUsdcToEth, dataAddLiquidity, dataDeleteLiquidity } from 'tools-d4rk444/DEX.js';
-import { dataDepositNostra, dataBorrowNostra, dataRepayNostra, dataWithdrawNostra } from 'tools-d4rk444/DEFI.js';
+import { dataDepositNostra, dataBorrowNostra, dataRepayNostra, dataWithdrawNostra } from 'tools-d4rk444/DeFi.js';
 import { dataBridgeETHToStarknet, dataBridgeETHFromStarknet, dataWithdrawFromBridge } from 'tools-d4rk444/bridge.js';
 import { subtract, multiply, divide, composition, add } from 'mathjs';
 import fs from 'fs';
