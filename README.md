@@ -4,7 +4,7 @@
 ## Описание
 Описание всех функций скрипта      
 
-1. Мост с Mainet в Starknet [*Использует Stargate и текущий gasPrice в сети*]   
+1. Мост с Mainet в Starknet [*Использует Starkgate и текущий gasPrice в сети*]   
 2. Главная часть с рандомизацией действий в MySwap/StarknetId/NostraFinance    
     - MySwap
         - Свап ETH в USDC
@@ -18,7 +18,7 @@
         - Вывод ETH
 3. Вывод ликвидности с MySwap и свап USDC в ETH
 4. Мост с Starknet в Mainet [*Записывает сумму ETH в файл amountBridge.txt*]
-5. Вывод ETH со смарт-контракта Stargate [*Берет сумму с файла amountBridge.txt*] **Удалите этот файл после использования функции!!!**
+5. Вывод ETH со смарт-контракта Starkgate [*Берет сумму с файла amountBridge.txt*] **Удалите этот файл после использования функции!!!**
 6. Выводит все ETH на нужные адреса [*Файл subWallet.txt*]
 7. Deploy нового аккаунта [*Использует немного ETH*]
 8. Выводит ваш Starknet адрес
