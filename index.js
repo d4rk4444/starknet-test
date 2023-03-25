@@ -67,9 +67,13 @@ const mySwapStart = async(privateKeyStarknet) => {
     //ADD LIQ
     console.log(chalk.yellow(`Add Liqidity ETH/USDC`));
     await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-        await dataAddLiquidity(res, 0.98).then(async(res) => {
-            await sendTransactionStarknet(res, privateKeyStarknet);
-        });
+        if (res > 0) {
+            await dataAddLiquidity(res, 0.98).then(async(res) => {
+                await sendTransactionStarknet(res, privateKeyStarknet);
+            });
+        } else if (res == 0) {
+            console.log(chalk.red(`No USDC to add`));
+        }
     });
     await timeout(pauseTime);
 }
@@ -122,6 +126,34 @@ const nostraFinance = async(privateKeyStarknet) => {
     await timeout(pauseTime);
 }
 
+const backNostraFinance = async(privateKeyStarknet) => {
+    const address = await privateToStarknetAddress(privateKeyStarknet);
+
+    await getAmountTokenStark(address, chainContract.Starknet.NostradETH, chainContract.Starknet.NostradETH).then(async(res) => {
+        if (res > 0) {
+            console.log(chalk.yellow(`Repay  Debt ETH = ${res/10**18}`));
+            await dataRepayNostra(address).then(async(res) => {
+                await sendTransactionStarknet(res, privateKeyStarknet);
+            });
+            await timeout(pauseTime);
+        } else if (res == 0) {
+            console.log(chalk.red(`Nothing to Repay`));
+        }
+    });
+
+    await getAmountTokenStark(address, chainContract.Starknet.NostraiETH, chainContract.Starknet.NostraiETH).then(async(res) => {
+        if (res > 0) {
+            console.log(chalk.yellow(`Withdraw  Assets ETH = ${res/10**18}`));
+            await dataWithdrawNostra(address).then(async(res) => {
+                await sendTransactionStarknet(res, privateKeyStarknet);
+            });
+            await timeout(pauseTime);
+        } else if (res == 0) {
+            console.log(chalk.red(`Nothing to Withdraw`));
+        }
+    });
+}
+
 const mySwapEnd = async(privateKeyStarknet) => {
     console.log(chalk.cyan('Start MySwapEnd'));
     const address = await privateToStarknetAddress(privateKeyStarknet);
@@ -129,18 +161,26 @@ const mySwapEnd = async(privateKeyStarknet) => {
     //WITHDRAW LIQ
     console.log(chalk.yellow(`Delete liquidity`));
     await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
-        await dataDeleteLiquidity(res, 0.98).then(async(res1) => {
-            await sendTransactionStarknet(res1, privateKeyStarknet);
-        });
+        if (res > 0) {
+            await dataDeleteLiquidity(res, 0.98).then(async(res1) => {
+                await sendTransactionStarknet(res1, privateKeyStarknet);
+            });
+        } else if (res == 0) {
+            console.log(chalk.red(`Nothing to Delete, 0 LP`));
+        }
     });
     await timeout(pauseTime);
 
     //SWAP USDC -> ETH
     console.log(chalk.yellow(`Swap USDC -> ETH`));
     await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-        await dataSwapUsdcToEth(res, 0.98).then(async(res1) => {
-            await sendTransactionStarknet(res1, privateKeyStarknet);
-        });
+        if (res > 0) {
+            await dataSwapUsdcToEth(res, 0.98).then(async(res1) => {
+                await sendTransactionStarknet(res1, privateKeyStarknet);
+            });
+        } else if (res == 0) {
+            console.log(chalk.red(`Nothing to Swap, 0 USDC`));
+        }
     });
     await timeout(pauseTime);
 }
@@ -220,6 +260,7 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         'Send to SubWallet OKX',
         'Deploy Account',
         'Get Starknet Address',
+        'Repay/Withdrow if > 0 [Nostra Finance]'
     ];
     const index = readline.keyInSelect(stage, 'Choose stage!');
     if (index == -1) { process.exit() };
@@ -250,6 +291,8 @@ const getStarknetAddress = async(privateKeyStarknet) => {
             await deployStarknetWallet(walletSTARK[i]);
         } else if (stage[index] == stage[7]) {
             await getStarknetAddress(walletSTARK[i]);
+        } else if (stage[index] == stage[8]) {
+            await backNostraFinance(walletSTARK[i]);
         }
         await timeout(pauseTime);
     }
