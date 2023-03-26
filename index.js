@@ -80,7 +80,7 @@ const mySwapStart = async(privateKeyStarknet) => {
             });
         }
 
-        if (i != quantity - 1) {
+        if (i < quantity - 1) {
             isReady = false;
             while(!isReady) {
                 //SWAP USDC -> ETH
