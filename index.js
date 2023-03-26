@@ -19,6 +19,7 @@ dotenv.config();
 
 consoleStamp(console, { format: ':date(HH:MM:ss)' });
 const pauseTime = generateRandomAmount(process.env.TIMEOUT_SEC_MIN * 1000, process.env.TIMEOUT_SEC_MAX * 1000, 0);
+const slippage = generateRandomAmount(1 - process.env.SLIPPAGE_MIN / 100, 1 - process.env.SLIPPAGE_MAX / 100, 3);
 
 const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     const addressEthereum = privateToAddress(privateKeyEthereum);
@@ -67,7 +68,7 @@ const mySwapStart = async(privateKeyStarknet) => {
         while(!isReady) {
             //SWAP ETH -> USDC
             console.log(chalk.yellow(`Swap ETH -> USDC`));
-            await dataSwapEthToUsdc(amountETH, 0.98).then(async(res) => {
+            await dataSwapEthToUsdc(amountETH, slippage).then(async(res) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
             await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
@@ -85,7 +86,7 @@ const mySwapStart = async(privateKeyStarknet) => {
             while(!isReady) {
                 //SWAP USDC -> ETH
                 console.log(chalk.yellow(`Swap USDC -> ETH`));
-                await dataSwapUsdcToEth(res, 0.98).then(async(res1) => {
+                await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
                     await sendTransactionStarknet(res1, privateKeyStarknet);
                 });
                 await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
@@ -105,7 +106,7 @@ const mySwapStart = async(privateKeyStarknet) => {
         //ADD LIQ
         console.log(chalk.yellow(`Add Liqidity ETH/USDC`));
         await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-            await dataAddLiquidity(res, 0.98).then(async(res) => {
+            await dataAddLiquidity(res, slippage).then(async(res) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
         });
@@ -207,7 +208,7 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
             if (workType == 1) {
                 res = parseInt(multiply(res, generateRandomAmount(0.97, 0.99, 3)));
             }
-            await dataDeleteLiquidity(res, 0.98).then(async(res1) => {
+            await dataDeleteLiquidity(res, slippage).then(async(res1) => {
                 await sendTransactionStarknet(res1, privateKeyStarknet);
             });
         } else if (res == 0) {
@@ -220,7 +221,7 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
     console.log(chalk.yellow(`Swap USDC -> ETH`));
     await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
         if (res > 0) {
-            await dataSwapUsdcToEth(res, 0.98).then(async(res1) => {
+            await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
                 await sendTransactionStarknet(res1, privateKeyStarknet);
             });
         } else if (res == 0) {
