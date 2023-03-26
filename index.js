@@ -51,31 +51,73 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
 const mySwapStart = async(privateKeyStarknet) => {
     console.log(chalk.cyan('Start MySwap'));
     const address = await privateToStarknetAddress(privateKeyStarknet);
-    const amountETH = generateRandomAmount(process.env.ETH_SWAP_MIN * 10**18, process.env.ETH_SWAP_MAX * 10**18, 0);
+    const quantity = generateRandomAmount(process.env.QUANTITY_SWAP_MIN, process.env.QUANTITY_SWAP_MAX, 0);
+    let isReady;
 
-    await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then((res) => {
-        if (Number(res) < amountETH) { throw new Error('Not enough ETH') };
-    });
+    for (let i = 0; i < quantity; i++) {
+        if (i == 0) {
+            console.log(`Random ${quantity} cicrcles`);
+        }
+        console.log(`Circle #${i+1}`);
+        const amountETH = generateRandomAmount(process.env.ETH_SWAP_MIN * 10**18, process.env.ETH_SWAP_MAX * 10**18, 0);
+        await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then((res) => {
+            if (Number(res) < amountETH) { throw new Error('Not enough ETH') };
+        });
 
-    //SWAP ETH -> USDC
-    console.log(chalk.yellow(`Swap ETH -> USDC`));
-    await dataSwapEthToUsdc(amountETH, 0.98).then(async(res) => {
-        await sendTransactionStarknet(res, privateKeyStarknet);
-    });
-    await timeout(pauseTime);
+        while(!isReady) {
+            //SWAP ETH -> USDC
+            console.log(chalk.yellow(`Swap ETH -> USDC`));
+            await dataSwapEthToUsdc(amountETH, 0.98).then(async(res) => {
+                await sendTransactionStarknet(res, privateKeyStarknet);
+            });
+            await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
+                if (res == 0) {
+                    console.log(chalk.red(`Error Swap, try again`));
+                } else if (res > 0) {
+                    isReady = true;
+                    await timeout(pauseTime);
+                }
+            });
+        }
 
-    //ADD LIQ
-    console.log(chalk.yellow(`Add Liqidity ETH/USDC`));
-    await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-        if (res > 0) {
+        if (i != quantity - 1) {
+            isReady = false;
+            while(!isReady) {
+                //SWAP USDC -> ETH
+                console.log(chalk.yellow(`Swap USDC -> ETH`));
+                await dataSwapUsdcToEth(res, 0.98).then(async(res1) => {
+                    await sendTransactionStarknet(res1, privateKeyStarknet);
+                });
+                await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
+                    if (res == 0) {
+                        console.log(chalk.red(`Error Swap, try again`));
+                    } else if (res > 0) {
+                        isReady = true;
+                        await timeout(pauseTime);
+                    }
+                });
+            }
+        }
+    }
+
+    isReady = false;
+    while(!isReady) {
+        //ADD LIQ
+        console.log(chalk.yellow(`Add Liqidity ETH/USDC`));
+        await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
             await dataAddLiquidity(res, 0.98).then(async(res) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
-        } else if (res == 0) {
-            console.log(chalk.red(`No USDC to add`));
-        }
-    });
-    await timeout(pauseTime);
+        });
+        await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
+            if (res == 0) {
+                console.log(chalk.red(`Error Add Liqidity, try again`));
+            } else if (res > 0) {
+                isReady = true;
+                await timeout(pauseTime);
+            }
+        });
+    }
 }
 
 const mintStarknetId = async(privateKeyStarknet) => {
@@ -154,7 +196,7 @@ const backNostraFinance = async(privateKeyStarknet) => {
     });
 }
 
-const mySwapEnd = async(privateKeyStarknet) => {
+const mySwapEnd = async(privateKeyStarknet, workType) => {
     console.log(chalk.cyan('Start MySwapEnd'));
     const address = await privateToStarknetAddress(privateKeyStarknet);
 
@@ -162,6 +204,9 @@ const mySwapEnd = async(privateKeyStarknet) => {
     console.log(chalk.yellow(`Delete liquidity`));
     await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
         if (res > 0) {
+            if (workType == 1) {
+                res = parseInt(multiply(res, generateRandomAmount(0.97, 0.99, 3)));
+            }
             await dataDeleteLiquidity(res, 0.98).then(async(res1) => {
                 await sendTransactionStarknet(res1, privateKeyStarknet);
             });
@@ -262,6 +307,11 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         'Get Starknet Address',
         'Repay/Withdrow if > 0 [Nostra Finance]'
     ];
+    const stageSecond = [
+        'Withdraw ALL',
+        'Withdraw Random [1-3%]'
+    ]
+
     const index = readline.keyInSelect(stage, 'Choose stage!');
     if (index == -1) { process.exit() };
     console.log(chalk.green(`Start ${stage[index]}`));
@@ -279,7 +329,15 @@ const getStarknetAddress = async(privateKeyStarknet) => {
                 await mainPart[s](walletSTARK[i]);
             }
         } else if (stage[index] == stage[2]) {
-            await mySwapEnd(walletSTARK[i]);
+            const indexSecond = readline.keyInSelect(stageSecond, 'Choose stage!');
+            if (indexSecond == -1) { process.exit() };
+            console.log(chalk.green(`Start ${stageSecond[indexSecond]}`));
+
+            if (stageSecond[indexSecond] == stageSecond[0]) {
+                await mySwapEnd(walletSTARK[i], 0);
+            } else if (stageSecond[indexSecond] == stageSecond[1]) {
+                await mySwapEnd(walletSTARK[i], 1);
+            }
         } else if (stage[index] == stage[3]) {
             await bridgeETHFromStarknet(walletETH[i], walletSTARK[i]);
         } else if (stage[index] == stage[4]) {
