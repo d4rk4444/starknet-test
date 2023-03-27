@@ -1,8 +1,7 @@
 # starknet-test
-A script for automating actions on the Starknet network. Interacts with projects such as Starkgate, MySwap, StarknetId, NostraFinance.
-Скрипт для автоматизации действий в сети Starknet. Взаимодействует с такими проектами, как Starkgate, MySwap, StarknetId, NostraFinance.
+A script for automating actions on the Starknet network. Interacts with projects such as Starkgate, MySwap, StarknetId, NostraFinance.  
 
-### Языки / Languages
+### Languages
 
 - [English](en/README.md)
 - [Русский](ru/README.md)
@@ -51,14 +50,14 @@ All required settings are in the .env file
 
 Insert private ArgentX addresses in the privateArgnet.txt file in this format:  
 ```
-ключ1
-ключ2
+key1
+key2
 ```
           
 Insert private Metamask addresses in the privateETH.txt file in this format:    
 ```
-ключ1
-ключ2
+key1
+key2
 ```
 ## Usage
 ```

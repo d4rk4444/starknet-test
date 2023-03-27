@@ -1,8 +1,7 @@
 # starknet-test
-A script for automating actions on the Starknet network. Interacts with projects such as Starkgate, MySwap, StarknetId, NostraFinance.
-Скрипт для автоматизации действий в сети Starknet. Взаимодействует с такими проектами, как Starkgate, MySwap, StarknetId, NostraFinance.
+Скрипт для автоматизации действий в сети Starknet. Взаимодействует с такими проектами, как Starkgate, MySwap, StarknetId, NostraFinance.    
 
-### Языки / Languages
+### Языки
 
 - [English](en/README.md)
 - [Русский](ru/README.md)
@@ -41,7 +40,7 @@ npm i
 
 ## Настройка
 Все нужные настройки в файле .env    
-    
+
 1. Время для паузы между действиями        
 2. Время для паузы между кошельками       
 3. Количество ETH для моста в сеть Starknet        
