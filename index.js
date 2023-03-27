@@ -17,10 +17,10 @@ import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-consoleStamp(console, { format: ':date(HH:MM:ss)' });
-consoleStamp(logger, { format: ':date(yyyy/mm/dd HH:MM:ss)', stdout: output });
 const output = fs.createWriteStream(`history.log`, { flags: 'a' });
 const logger = new console.Console(output);
+consoleStamp(console, { format: ':date(HH:MM:ss)' });
+consoleStamp(logger, { format: ':date(yyyy/mm/dd HH:MM:ss)', stdout: output });
 
 const pauseTime = generateRandomAmount(process.env.TIMEOUT_ACTION_SEC_MIN * 1000, process.env.TIMEOUT_ACTION_SEC_MAX * 1000, 0);
 const pauseWalletTime = generateRandomAmount(process.env.TIMEOUT_WALLET_SEC_MIN * 1000, process.env.TIMEOUT_WALLET_SEC_MAX * 1000, 0);
