@@ -77,6 +77,7 @@ const mySwapStart = async(privateKeyStarknet) => {
             if (Number(res) < amountETH) { throw new Error('Not enough ETH') };
         });
 
+        isReady = false;
         while(!isReady) {
             //SWAP ETH -> USDC
             console.log(chalk.yellow(`Swap ETH -> USDC`));
@@ -328,7 +329,6 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
 const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     const addressEthereum = privateToAddress(privateKeyEthereum);
     const addressStarknet = await privateToStarknetAddress(privateKeyStarknet);
-
     let isReady;
 
     while(!isReady) {
