@@ -101,8 +101,10 @@ const mySwapStart = async(privateKeyStarknet) => {
                 //SWAP USDC -> ETH
                 console.log(chalk.yellow(`Swap USDC -> ETH`));
                 logger.log(`Swap USDC -> ETH`);
-                await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
-                    await sendTransactionStarknet(res1, privateKeyStarknet);
+                await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
+                    await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
+                        await sendTransactionStarknet(res1, privateKeyStarknet);
+                    });
                 });
                 await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
                     if (res == 0) {
@@ -274,63 +276,87 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
     console.log(chalk.cyan('Start MySwapEnd'));
     logger.log('Start MySwapEnd');
     const address = await privateToStarknetAddress(privateKeyStarknet);
+    let isReady;
 
-    //WITHDRAW LIQ
-    console.log(chalk.yellow(`Delete liquidity`));
-    logger.log(`Delete liquidity`);
-    await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
-        if (res > 0) {
+    while(!isReady) {
+        //WITHDRAW LIQ
+        console.log(chalk.yellow(`Delete liquidity`));
+        logger.log(`Delete liquidity`);
+        await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
             if (workType == 1) {
                 res = parseInt(multiply(res, generateRandomAmount(0.97, 0.99, 3)));
             }
             await dataDeleteLiquidity(res, slippage).then(async(res1) => {
                 await sendTransactionStarknet(res1, privateKeyStarknet);
             });
-        } else if (res == 0) {
-            console.log(chalk.red(`Nothing to Delete, 0 LP`));
-            logger.log(`Nothing to Delete, 0 LP`);
-        }
-    });
-    await timeout(pauseTime);
+            await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res1) => {
+                const needAmountLP = parseInt(multiply(res, 0.03));
+                if (res1 > needAmountLP) {
+                    console.log(chalk.red(`Error Delete liquidity, try again`));
+                    logger.log(`Error Delete liquidity, try again`);
+                } else if (res1 <= needAmountLP) {
+                    isReady = true;
+                    await timeout(pauseTime);
+                }
+            });
+        });
+        await timeout(pauseTime);
+    }
 
-    //SWAP USDC -> ETH
-    console.log(chalk.yellow(`Swap USDC -> ETH`));
-    logger.log(`Swap USDC -> ETH`);
-    await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-        if (res > 0) {
+    isReady = false;
+    while(!isReady) {
+        //SWAP USDC -> ETH
+        console.log(chalk.yellow(`Swap USDC -> ETH`));
+        logger.log(`Swap USDC -> ETH`);
+        await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
             await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
                 await sendTransactionStarknet(res1, privateKeyStarknet);
             });
-        } else if (res == 0) {
-            console.log(chalk.red(`Nothing to Swap, 0 USDC`));
-            logger.log(`Nothing to Swap, 0 USDC`);
-        }
-    });
-    await timeout(pauseTime);
+        });
+        await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
+            if (res == 0) {
+                console.log(chalk.red(`Error Swap, try again`));
+                logger.log(`Error Swap, try again`);
+            } else if (res > 0) {
+                isReady = true;
+                await timeout(pauseTime);
+            }
+        });
+    }
 }
 
 const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     const addressEthereum = privateToAddress(privateKeyEthereum);
     const addressStarknet = await privateToStarknetAddress(privateKeyStarknet);
 
-    console.log(chalk.yellow(`Bridge ETH to Ethereum`));
-    logger.log(`Bridge ETH to Ethereum`);
-    await getAmountTokenStark(addressStarknet, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async (res) => {
-        if (Number(res) < 0.001 * 10**18) { throw new Error('Not enough ETH') };
+    let isReady;
 
-        await dataBridgeETHFromStarknet(addressEthereum, 1).then(async(payload) => {
-            await estimateInvokeMaxFee(payload, privateKeyStarknet).then(async(maxFee) => {
-                const randomAmount = generateRandomAmount(2 * 10**12, 5 * 10**12, 0);
-                const amountETH = subtract( subtract(res, maxFee), randomAmount);
-                payload = await dataBridgeETHFromStarknet(addressEthereum, amountETH);
-                try {
-                    await sendTransactionStarknet(payload, privateKeyStarknet);
-                    fs.writeFileSync("amountBridge.txt", `${amountETH}\n`, { flag: 'a+' });
-                } catch {};
+    while(!isReady) {
+        console.log(chalk.yellow(`Bridge ETH to Ethereum`));
+        logger.log(`Bridge ETH to Ethereum`);
+        await getAmountTokenStark(addressStarknet, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async (res) => {
+            if (Number(res) < 0.001 * 10**18) { 
+                console.log(chalk.red('Not enough ETH'));
+                logger.log('Not enough ETH');
+            };
+
+            await dataBridgeETHFromStarknet(addressEthereum, 1).then(async(payload) => {
+                await estimateInvokeMaxFee(payload, privateKeyStarknet).then(async(maxFee) => {
+                    const randomAmount = generateRandomAmount(2 * 10**12, 5 * 10**12, 0);
+                    const amountETH = subtract( subtract(res, maxFee), randomAmount);
+                    payload = await dataBridgeETHFromStarknet(addressEthereum, amountETH);
+                    try {
+                        await sendTransactionStarknet(payload, privateKeyStarknet);
+                        fs.writeFileSync("amountBridge.txt", `${amountETH}\n`, { flag: 'a+' });
+                        isReady = true;
+                        await timeout(pauseTime);
+                    } catch (err) {
+                        logger.log(err);
+                    };
+                });
             });
         });
-    });
-    await timeout(pauseTime);
+    }
 }
 
 const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
@@ -338,21 +364,25 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
 
     console.log(chalk.yellow(`Withdraw ${amountETH / 10**18}ETH from Stargate`));
     logger.log(`Withdraw ${amountETH / 10**18}ETH from Stargate`);
-    await dataWithdrawFromBridge(rpc.Ethereum, amountETH, addressEthereum).then(async(res) => {
-        await getGasPriceEthereum().then(async(fee) => {
-            await sendEVMTX(rpc.Ethereum,
-                2,
-                res.estimateGas,
-                '0',
-                fee.maxFee,
-                fee.maxPriorityFee,
-                chainContract.Ethereum.StarknetBridge,
-                null,
-                res.encodeABI,
-                privateKeyEthereum);
+    try {
+        await dataWithdrawFromBridge(rpc.Ethereum, amountETH, addressEthereum).then(async(res) => {
+            await getGasPriceEthereum().then(async(fee) => {
+                await sendEVMTX(rpc.Ethereum,
+                    2,
+                    res.estimateGas,
+                    '0',
+                    fee.maxFee,
+                    fee.maxPriorityFee,
+                    chainContract.Ethereum.StarknetBridge,
+                    null,
+                    res.encodeABI,
+                    privateKeyEthereum);
+            });
         });
-    });
-    await timeout(pauseTime);
+        await timeout(pauseTime);
+    } catch (err) {
+        logger.log(err);
+    }
 }
 
 const withdrawETHToSubWallet = async(toAddress, privateKey) => {
