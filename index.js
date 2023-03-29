@@ -5,7 +5,8 @@ import { sendEVMTX,
     getAmountTokenStark,
     sendTransactionStarknet,
     getGasPriceEthereum,
-    getApprovedStarknetId, dataMintStarknetId, numberToHex, getETHAmount, privateToAddress, estimateInvokeMaxFee } from 'tools-d4rk444/web3.js';
+    getApprovedStarknetId,
+    dataMintStarknetId, numberToHex, getETHAmount, privateToAddress, estimateInvokeMaxFee, estimateMessageFee } from 'tools-d4rk444/web3.js';
 import { dataSwapEthToUsdc, dataSwapUsdcToEth, dataAddLiquidity, dataDeleteLiquidity } from 'tools-d4rk444/DEX.js';
 import { dataDepositNostra, dataBorrowNostra, dataRepayNostra, dataWithdrawNostra } from 'tools-d4rk444/DeFi.js';
 import { dataBridgeETHToStarknet, dataBridgeETHToStarknetAmount, dataBridgeETHFromStarknet, dataWithdrawFromBridge } from 'tools-d4rk444/bridge.js';
@@ -44,17 +45,19 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     try {
         await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, addressStarknet, addressEthereum).then(async(res) => {
             await getGasPriceEthereum().then(async(fee) => {
-                await sendEVMTX(rpc.Ethereum,
-                    2,
-                    res.estimateGas,
-                    '0',
-                    fee.maxFee,
-                    fee.maxPriorityFee,
-                    chainContract.Ethereum.StarknetBridge,
-                    amountETH,
-                    res.encodeABI,
-                    privateKeyEthereum);
-            });
+                await estimateMessageFee(addressStarknet, amountETH).then(async(msgFee) => {
+                    await sendEVMTX(rpc.Ethereum,
+                        2,
+                        res.estimateGas,
+                        '0',
+                        fee.maxFee,
+                        fee.maxPriorityFee,
+                        chainContract.Ethereum.StarknetBridge,
+                        add(amountETH, msgFee.overall_fee),
+                        res.encodeABI,
+                        privateKeyEthereum);
+                    });
+                });
         });
         await timeout(pauseTime);
     } catch (err) {
