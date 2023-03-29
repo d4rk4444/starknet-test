@@ -6,7 +6,7 @@ import { sendEVMTX,
     sendTransactionStarknet,
     getGasPriceEthereum,
     getApprovedStarknetId,
-    dataMintStarknetId, numberToHex, getETHAmount, privateToAddress, estimateInvokeMaxFee, estimateMessageFee } from 'tools-d4rk444/web3.js';
+    dataMintStarknetId, numberToHex, getETHAmount, privateToAddress, estimateInvokeMaxFee, estimateMsgFee } from 'tools-d4rk444/web3.js';
 import { dataSwapEthToUsdc, dataSwapUsdcToEth, dataAddLiquidity, dataDeleteLiquidity } from 'tools-d4rk444/DEX.js';
 import { dataDepositNostra, dataBorrowNostra, dataRepayNostra, dataWithdrawNostra } from 'tools-d4rk444/DeFi.js';
 import { dataBridgeETHToStarknet, dataBridgeETHToStarknetAmount, dataBridgeETHFromStarknet, dataWithdrawFromBridge } from 'tools-d4rk444/bridge.js';
@@ -43,9 +43,9 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     console.log(chalk.yellow(`Bridge ${amountETH / 10**18}ETH to Starknet`));
     logger.log(`Bridge ${amountETH / 10**18}ETH to Starknet`);
     try {
-        await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, addressStarknet, addressEthereum).then(async(res) => {
-            await getGasPriceEthereum().then(async(fee) => {
-                await estimateMessageFee(addressStarknet, amountETH).then(async(msgFee) => {
+        await estimateMsgFee(addressStarknet, amountETH.toString()).then(async(msgFee) => {
+            await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, msgFee, addressStarknet, addressEthereum).then(async(res) => {     
+                await getGasPriceEthereum().then(async(fee) => {
                     await sendEVMTX(rpc.Ethereum,
                         2,
                         res.estimateGas,
@@ -53,14 +53,15 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                         fee.maxFee,
                         fee.maxPriorityFee,
                         chainContract.Ethereum.StarknetBridge,
-                        add(amountETH, msgFee.overall_fee),
+                        add(amountETH, msgFee),
                         res.encodeABI,
                         privateKeyEthereum);
-                    });
                 });
+            });
         });
         await timeout(pauseTime);
     } catch (err) {
+        console.log(err);
         logger.log(err);
     }
 }
@@ -358,6 +359,7 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                         isReady = true;
                         await timeout(pauseTime);
                     } catch (err) {
+                        console.log(err);
                         logger.log(err);
                     };
                 });
@@ -388,6 +390,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
         });
         await timeout(pauseTime);
     } catch (err) {
+        console.log(err);
         logger.log(err);
     }
 }
