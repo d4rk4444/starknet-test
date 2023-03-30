@@ -74,49 +74,28 @@ const mySwapStart = async(privateKeyStarknet) => {
     const quantity = generateRandomAmount(process.env.QUANTITY_SWAP_MIN, process.env.QUANTITY_SWAP_MAX, 0);
     let isReady;
 
-    for (let i = 0; i < quantity; i++) {
-        if (i == 0) {
-            console.log(`Random ${quantity} cicrcles`);
-            logger.log(`Random ${quantity} cicrcles`);
-        }
-        console.log(`Circle #${i+1}`);
-        logger.log(`Circle #${i+1}`);
-        const amountETH = generateRandomAmount(process.env.ETH_SWAP_MIN * 10**18, process.env.ETH_SWAP_MAX * 10**18, 0);
-        await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then((res) => {
-            if (Number(res) < amountETH) { throw new Error('Not enough ETH') };
-        });
-
-        isReady = false;
-        while(!isReady) {
-            //SWAP ETH -> USDC
-            console.log(chalk.yellow(`Swap ETH -> USDC`));
-            logger.log(`Swap ETH -> USDC`);
-            await dataSwapEthToUsdc(amountETH, slippage).then(async(res) => {
-                await sendTransactionStarknet(res, privateKeyStarknet);
+    try {
+        for (let i = 0; i < quantity; i++) {
+            if (i == 0) {
+                console.log(`Random ${quantity} cicrcles`);
+                logger.log(`Random ${quantity} cicrcles`);
+            }
+            console.log(`Circle #${i+1}`);
+            logger.log(`Circle #${i+1}`);
+            const amountETH = generateRandomAmount(process.env.ETH_SWAP_MIN * 10**18, process.env.ETH_SWAP_MAX * 10**18, 0);
+            await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then((res) => {
+                if (Number(res) < amountETH) { throw new Error('Not enough ETH') };
             });
-            await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-                if (res == 0) {
-                    console.log(chalk.red(`Error Swap, try again`));
-                    logger.log(`Error Swap, try again`);
-                } else if (res > 0) {
-                    isReady = true;
-                    await timeout(pauseTime);
-                }
-            });
-        }
 
-        if (i < quantity - 1) {
             isReady = false;
             while(!isReady) {
-                //SWAP USDC -> ETH
-                console.log(chalk.yellow(`Swap USDC -> ETH`));
-                logger.log(`Swap USDC -> ETH`);
-                await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-                    await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
-                        await sendTransactionStarknet(res1, privateKeyStarknet);
-                    });
+                //SWAP ETH -> USDC
+                console.log(chalk.yellow(`Swap ETH -> USDC`));
+                logger.log(`Swap ETH -> USDC`);
+                await dataSwapEthToUsdc(amountETH, slippage).then(async(res) => {
+                    await sendTransactionStarknet(res, privateKeyStarknet);
                 });
-                await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
+                await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
                     if (res == 0) {
                         console.log(chalk.red(`Error Swap, try again`));
                         logger.log(`Error Swap, try again`);
@@ -126,28 +105,54 @@ const mySwapStart = async(privateKeyStarknet) => {
                     }
                 });
             }
-        }
-    }
 
-    isReady = false;
-    while(!isReady) {
-        //ADD LIQ
-        console.log(chalk.yellow(`Add Liqidity ETH/USDC`));
-        logger.log(`Add Liqidity ETH/USDC`);
-        await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
-            await dataAddLiquidity(res, slippage).then(async(res) => {
-                await sendTransactionStarknet(res, privateKeyStarknet);
-            });
-        });
-        await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
-            if (res == 0) {
-                console.log(chalk.red(`Error Add Liqidity, try again`));
-                logger.log(`Error Add Liqidity, try again`);
-            } else if (res > 0) {
-                isReady = true;
-                await timeout(pauseTime);
+            if (i < quantity - 1) {
+                isReady = false;
+                while(!isReady) {
+                    //SWAP USDC -> ETH
+                    console.log(chalk.yellow(`Swap USDC -> ETH`));
+                    logger.log(`Swap USDC -> ETH`);
+                    await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
+                        await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
+                            await sendTransactionStarknet(res1, privateKeyStarknet);
+                        });
+                    });
+                    await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
+                        if (res == 0) {
+                            console.log(chalk.red(`Error Swap, try again`));
+                            logger.log(`Error Swap, try again`);
+                        } else if (res > 0) {
+                            isReady = true;
+                            await timeout(pauseTime);
+                        }
+                    });
+                }
             }
-        });
+        }
+
+        isReady = false;
+        while(!isReady) {
+            //ADD LIQ
+            console.log(chalk.yellow(`Add Liqidity ETH/USDC`));
+            logger.log(`Add Liqidity ETH/USDC`);
+            await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
+                await dataAddLiquidity(res, slippage).then(async(res) => {
+                    await sendTransactionStarknet(res, privateKeyStarknet);
+                });
+            });
+            await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res) => {
+                if (res == 0) {
+                    console.log(chalk.red(`Error Add Liqidity, try again`));
+                    logger.log(`Error Add Liqidity, try again`);
+                } else if (res > 0) {
+                    isReady = true;
+                    await timeout(pauseTime);
+                }
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        logger.log(err);
     }
 }
 
