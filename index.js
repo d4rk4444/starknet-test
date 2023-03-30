@@ -44,7 +44,8 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     logger.log(`Bridge ${amountETH / 10**18}ETH to Starknet`);
     try {
         await estimateMsgFee(addressStarknet, amountETH.toString()).then(async(msgFee) => {
-            await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, msgFee, addressStarknet, addressEthereum).then(async(res) => {     
+            const value = add(amountETH, msgFee);
+            await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, value, addressStarknet, addressEthereum).then(async(res) => {     
                 await getGasPriceEthereum().then(async(fee) => {
                     await sendEVMTX(rpc.Ethereum,
                         2,
@@ -53,7 +54,7 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                         fee.maxFee,
                         fee.maxPriorityFee,
                         chainContract.Ethereum.StarknetBridge,
-                        add(amountETH, msgFee),
+                        value,
                         res.encodeABI,
                         privateKeyEthereum);
                 });
