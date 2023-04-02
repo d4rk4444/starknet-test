@@ -51,7 +51,7 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                         2,
                         res.estimateGas,
                         '0',
-                        parseInt(multiply(fee.maxFee, 1.15)),
+                        (parseInt(multiply(fee.maxFee, 1.15))).toString(),
                         fee.maxPriorityFee,
                         chainContract.Ethereum.StarknetBridge,
                         value,
@@ -386,7 +386,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
                     2,
                     res.estimateGas,
                     '0',
-                    parseInt(multiply(fee.maxFee, 1.15)),
+                    (parseInt(multiply(fee.maxFee, 1.15))).toString(),
                     fee.maxPriorityFee,
                     chainContract.Ethereum.StarknetBridge,
                     null,
@@ -433,6 +433,7 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         'Send to SubWallet OKX',
         'Deploy Account',
         'Get Starknet Address',
+        '2/3/4 Stage with 100% withdraw liq'
     ];
     const stageSecond = [
         'Withdraw ALL',
@@ -479,6 +480,24 @@ const getStarknetAddress = async(privateKeyStarknet) => {
             await deployStarknetWallet(walletSTARK[i]);
         } else if (stage[index] == stage[7]) {
             await getStarknetAddress(walletSTARK[i]);
+        } else if (stage[index] == stage[8]) {
+            console.log(chalk.green(`Start Main part [MySwap/StarknetId/Nostra Finance]`));
+            logger.log(`Start Main part [MySwap/StarknetId/Nostra Finance]`);
+            shuffle(mainPart);
+            for (let s = 0; s < mainPart.length; s++) {
+                await mainPart[s](walletSTARK[i]);
+            }
+            await timeout(pauseTime);
+
+            console.log(chalk.green(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`));
+            logger.log(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`);
+            await mySwapEnd(walletSTARK[i], 0);
+            await timeout(pauseTime);
+
+            console.log(chalk.green(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`));
+            logger.log(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`);
+            await bridgeETHFromStarknet(walletETH[i], walletSTARK[i]);
+            await timeout(pauseTime);
         }
         await timeout(pauseWalletTime);
     }
