@@ -401,6 +401,31 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
     }
 }
 
+const swapUSDCToETH = async(privateKeyStarknet) => {
+    const address = await privateToStarknetAddress(privateKeyStarknet);
+    
+    isReady;
+    while(!isReady) {
+        //SWAP USDC -> ETH
+        console.log(chalk.yellow(`Swap USDC -> ETH`));
+        logger.log(`Swap USDC -> ETH`);
+        await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
+            await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
+                await sendTransactionStarknet(res1, privateKeyStarknet);
+            });
+        });
+        await getAmountTokenStark(address, chainContract.Starknet.ETH, chainContract.Starknet.ETHAbi).then(async(res) => {
+            if (res == 0) {
+                console.log(chalk.red(`Error Swap, try again`));
+                logger.log(`Error Swap, try again`);
+            } else if (res > 0) {
+                isReady = true;
+                await timeout(pauseTime);
+            }
+        });
+    }
+}
+
 const withdrawETHToSubWallet = async(toAddress, privateKey) => {
     const addressEthereum = privateToAddress(privateKey);
     await getETHAmount(rpc.Ethereum, addressEthereum).then(async(res) => {
@@ -433,7 +458,8 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         'Send to SubWallet OKX',
         'Deploy Account',
         'Get Starknet Address',
-        '2/3/4 Stage with 100% withdraw liq'
+        '2/3/4 Stage with 100% withdraw liq',
+        'Swap ETH -> USDC'
     ];
     const stageSecond = [
         'Withdraw ALL',
@@ -498,7 +524,10 @@ const getStarknetAddress = async(privateKeyStarknet) => {
             logger.log(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`);
             await bridgeETHFromStarknet(walletETH[i], walletSTARK[i]);
             await timeout(pauseTime);
+        } else if (stage[index] == stage[9]) {
+            await swapUSDCToETH(walletSTARK[i]);
         }
+
         await timeout(pauseWalletTime);
     }
     console.log(chalk.bgMagentaBright('Process End!'));
