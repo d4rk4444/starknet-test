@@ -448,7 +448,7 @@ const getStarknetAddress = async(privateKeyStarknet) => {
     const walletETH = parseFile('privateETH.txt');
     const walletSTARK = parseFile('privateArgent.txt');
     const walletOKX = parseFile('subWallet.txt');
-    const mainPart = [mySwapStart, mintStarknetId, nostraFinance];
+    const mainPart = [mySwapStart, mintStarknetId];
     const stage = [
         'Bridge to Starknet',
         'Main part [MySwap/StarknetId/Nostra Finance]',
