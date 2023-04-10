@@ -78,6 +78,50 @@ const bridgeETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
     }
 }
 
+const bridgePercentETHToStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
+    const addressEthereum = privateToAddress(privateKeyEthereum);
+    const addressStarknet = await privateToStarknetAddress(privateKeyStarknet);
+
+    //BRIDGE ETH TO STARKNET
+    try {
+        let amountETH = 1000;
+        await estimateMsgFee(addressStarknet, amountETH.toString()).then(async(msgFee) => {
+            let value = add(amountETH, msgFee);
+            await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, value, addressStarknet, addressEthereum).then(async(res) => {
+                await getGasPriceEthereum().then(async(fee) => {
+                    const amountFee = parseInt(multiply(res.estimateGas, add((parseInt(multiply(fee.maxFee, 1.15))).toString(), fee.maxPriorityFee * 10**9)) + msgFee);
+                    await getETHAmount(rpc.Ethereum, addressEthereum).then(async(amountETH) => {
+                        amountETH = subtract(amountETH, amountFee);
+                        const random = generateRandomAmount(process.env.PERCENT_BRIDGE_MIN / 100, process.env.PERCENT_BRIDGE_MAX / 100, 3);
+                        amountETH = parseInt(multiply(amountETH, random));
+                        await estimateMsgFee(addressStarknet, amountETH.toString()).then(async(msgFee1) => {
+                            value = add(amountETH, msgFee1);
+                            console.log(chalk.yellow(`Bridge ${amountETH / 10**18}ETH to Starknet`));
+                            logger.log(`Bridge ${amountETH / 10**18}ETH to Starknet`);
+                            await dataBridgeETHToStarknetAmount(rpc.Ethereum, amountETH, value, addressStarknet, addressEthereum).then(async(res1) => {
+                                await sendEVMTX(rpc.Ethereum,
+                                    2,
+                                    res1.estimateGas,
+                                    '0',
+                                    (parseInt(multiply(fee.maxFee, 1.15))).toString(),
+                                    fee.maxPriorityFee,
+                                    chainContract.Ethereum.StarknetBridge,
+                                    value,
+                                    res1.encodeABI,
+                                    privateKeyEthereum);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        await timeout(pauseTime);
+    } catch (err) {
+        logger.log(err);
+        throw new Error(err);
+    }
+}
+
 const mySwapStart = async(privateKeyStarknet) => {
     console.log(chalk.cyan('Start MySwap'));
     logger.log('Start MySwap');
@@ -649,7 +693,8 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         'Get Starknet Address',
         '2/3/4 Stage with 100% withdraw liq',
         'Swap ETH -> USDC',
-        'NOSTRA FINANCE USDC'
+        'NOSTRA FINANCE USDC',
+        'Bridge PERCENT to Starknet'
     ];
     const stageSecond = [
         'Withdraw ALL',
@@ -718,7 +763,9 @@ const getStarknetAddress = async(privateKeyStarknet) => {
             await swapUSDCToETH(walletSTARK[i]);
         } else if (stage[index] == stage[10]) {
             await nostraFinanceUSDC(walletSTARK[i]);
-        }
+        } else if (stage[index] == stage[11]) {
+            await bridgePercentETHToStarknet(walletETH[i], walletSTARK[i]);
+        } 
 
         await timeout(pauseWalletTime);
     }
