@@ -1,4 +1,5 @@
-import { rpc, chainContract, timeout, shuffle, parseFile, generateRandomAmount } from 'tools-d4rk444/other.js';
+import { rpc } from './tools/other.js';
+import { chainContract, timeout, shuffle, parseFile, generateRandomAmount } from 'tools-d4rk444/other.js';
 import { sendEVMTX,
     deployStarknetWallet,
     privateToStarknetAddress,
@@ -154,7 +155,9 @@ const mySwapStart = async(privateKeyStarknet) => {
                     await sendTransactionStarknet(res, privateKeyStarknet);
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             }
 
             await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
@@ -182,7 +185,9 @@ const mySwapStart = async(privateKeyStarknet) => {
                             await sendTransactionStarknet(res1, privateKeyStarknet); 
                         });
                     } catch (err) {
-                        logger.log(err.data.message);
+                        logger.log(err.message);
+                        console.log(err.message);
+                        await timeout(pauseTime);
                     }
                 });
 
@@ -212,7 +217,9 @@ const mySwapStart = async(privateKeyStarknet) => {
                     await sendTransactionStarknet(res, privateKeyStarknet);
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             }
         });
 
@@ -253,7 +260,9 @@ const mintStarknetId = async(privateKeyStarknet) => {
                 isReady = true;
             });
         } catch (err) {
-            logger.log(err.data.message);
+            logger.log(err.message);
+            console.log(err.message);
+            await timeout(pauseTime);
         }
     }
 }
@@ -353,7 +362,9 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
         } catch (err) {
-            logger.log(err.data.message);
+            logger.log(err.message);
+            console.log(err.message);
+            await timeout(pauseTime);
         }
 
         await getAmountTokenStark(address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
@@ -379,7 +390,9 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
         } catch (err) {
-            logger.log(err.data.message);
+            logger.log(err.message);
+            console.log(err.message);
+            await timeout(pauseTime);
         }
         
         await getAmountTokenStark(address, chainContract.Starknet.NostraiUSDC, chainContract.Starknet.NostraiUSDC).then(async(res) => {
@@ -405,7 +418,9 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
         } catch (err) {
-            logger.log(err.data.message);
+            logger.log(err.message);
+            console.log(err.message);
+            await timeout(pauseTime);
         }
         
         await getAmountTokenStark(address, chainContract.Starknet.NostradUSDC, chainContract.Starknet.NostradUSDC).then(async(res) => {
@@ -431,7 +446,9 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
         } catch (err) {
-            logger.log(err.data.message);
+            logger.log(err.message);
+            console.log(err.message);
+            await timeout(pauseTime);
         }
         
         await getAmountTokenStark(address, chainContract.Starknet.NostradUSDC, chainContract.Starknet.NostradUSDC).then(async(res) => {
@@ -457,7 +474,9 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
                 await sendTransactionStarknet(res, privateKeyStarknet);
             });
         } catch (err) {
-            logger.log(err.data.message);
+            logger.log(err.message);
+            console.log(err.message);
+            await timeout(pauseTime);
         }
         
         await getAmountTokenStark(address, chainContract.Starknet.NostraiUSDC, chainContract.Starknet.NostraiUSDC).then(async(res) => {
@@ -484,7 +503,9 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
                     await sendTransactionStarknet(res1, privateKeyStarknet);
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             }
         });
 
@@ -521,7 +542,9 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
                     await sendTransactionStarknet(res1, privateKeyStarknet);
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             }
             
             await getAmountTokenStark(address, chainContract.Starknet.ETHUSDCLP, chainContract.Starknet.ETHUSDCLP).then(async(res1) => {
@@ -550,7 +573,9 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
                     await sendTransactionStarknet(res1, privateKeyStarknet);
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             }
         });
 
@@ -596,7 +621,9 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                     });
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             };
         });   
     }
@@ -643,7 +670,9 @@ const swapUSDCToETH = async(privateKeyStarknet) => {
                     await sendTransactionStarknet(res1, privateKeyStarknet);
                 });
             } catch (err) {
-                logger.log(err.data.message);
+                logger.log(err.message);
+                console.log(err.message);
+                await timeout(pauseTime);
             }
         });
         
