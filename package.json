@@ -1,6 +1,6 @@
 {
   "name": "starknet-test",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -14,7 +14,8 @@
     "ethers": "^5.7.2",
     "mathjs": "^11.5.0",
     "readline-sync": "^1.4.10",
-    "tools-d4rk444": "^1.2.8"
+    "starknet": "^4.22.0",
+    "tools-d4rk444": "^1.2.9"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
