@@ -1,4 +1,4 @@
-import { rpc } from './tools/other.js';
+//import { rpc } from './tools/other.js';
 import { chainContract, timeout, shuffle, parseFile, generateRandomAmount } from 'tools-d4rk444/other.js';
 import { sendEVMTX,
     deployStarknetWallet,
