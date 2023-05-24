@@ -539,7 +539,7 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
                 res = parseInt(multiply(res, generateRandomAmount(0.97, 0.99, 3)));
             }
             try {
-                await dataDeleteLiquidity(res, slippage).then(async(res1) => {
+                await dataDeleteLiquidity(rpc, res, slippage).then(async(res1) => {
                     await sendTransactionStarknet(rpc, res1, privateKeyStarknet);
                 });
             } catch (err) {
