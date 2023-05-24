@@ -152,7 +152,7 @@ const mySwapStart = async(privateKeyStarknet) => {
             console.log(chalk.yellow(`Swap ETH -> USDC`));
             logger.log(`Swap ETH -> USDC`);
             try {
-                await dataSwapEthToUsdc(amountETH, slippage).then(async(res) => {
+                await dataSwapEthToUsdc(rpc, amountETH, slippage).then(async(res) => {
                     await sendTransactionStarknet(rpc, res, privateKeyStarknet);
                 });
             } catch (err) {
@@ -182,7 +182,7 @@ const mySwapStart = async(privateKeyStarknet) => {
                 logger.log(`Swap USDC -> ETH`);
                 await getAmountTokenStark(rpc, address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
                     try {    
-                        await dataSwapUsdcToEth(res, slippage).then(async(res1) => {  
+                        await dataSwapUsdcToEth(rpc, res, slippage).then(async(res1) => {  
                             await sendTransactionStarknet(rpc, res1, privateKeyStarknet); 
                         });
                     } catch (err) {
@@ -214,7 +214,7 @@ const mySwapStart = async(privateKeyStarknet) => {
         logger.log(`Add Liqidity ETH/USDC`);
         await getAmountTokenStark(rpc, address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
             try {
-                await dataAddLiquidity(res, slippage).then(async(res) => {
+                await dataAddLiquidity(rpc, res, slippage).then(async(res) => {
                     await sendTransactionStarknet(rpc, res, privateKeyStarknet);
                 });
             } catch (err) {
@@ -359,7 +359,7 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
         logger.log(`Swap ETH -> USDC`);
         const amountETH = await getETHAmountStarknet(rpc, '5150000', 0.98);
         try {
-            await dataSwapEthToUsdc(amountETH, slippage).then(async(res) => {
+            await dataSwapEthToUsdc(rpc, amountETH, slippage).then(async(res) => {
                 await sendTransactionStarknet(rpc, res, privateKeyStarknet);
             });
         } catch (err) {
@@ -500,7 +500,7 @@ const nostraFinanceUSDC = async(privateKeyStarknet) => {
         logger.log(`Swap USDC -> ETH`);
         await getAmountTokenStark(rpc, address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
             try {
-                await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
+                await dataSwapUsdcToEth(rpc, res, slippage).then(async(res1) => {
                     await sendTransactionStarknet(rpc, res1, privateKeyStarknet);
                 });
             } catch (err) {
@@ -570,7 +570,7 @@ const mySwapEnd = async(privateKeyStarknet, workType) => {
         logger.log(`Swap USDC -> ETH`);
         await getAmountTokenStark(rpc, address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
             try {
-                await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
+                await dataSwapUsdcToEth(rpc, res, slippage).then(async(res1) => {
                     await sendTransactionStarknet(rpc, res1, privateKeyStarknet);
                 });
             } catch (err) {
@@ -667,7 +667,7 @@ const swapUSDCToETH = async(privateKeyStarknet) => {
         logger.log(`Swap USDC -> ETH`);
         await getAmountTokenStark(rpc, address, chainContract.Starknet.USDC, chainContract.Starknet.USDCAbi).then(async(res) => {
             try {
-                await dataSwapUsdcToEth(res, slippage).then(async(res1) => {
+                await dataSwapUsdcToEth(rpc, res, slippage).then(async(res1) => {
                     await sendTransactionStarknet(rpc, res1, privateKeyStarknet);
                 });
             } catch (err) {
