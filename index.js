@@ -615,6 +615,7 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                         const randomAmount = generateRandomAmount(2 * 10**12, 5 * 10**12, 0);
                         const amountETH = subtract( subtract(res, maxFee), randomAmount);
                         payload = await dataBridgeETHFromStarknet(addressEthereum, amountETH);
+                        console.log(payload)
                         await sendTransactionStarknet(rpc, payload, privateKeyStarknet);
                         fs.writeFileSync("amountBridge.txt", `${amountETH}\n`, { flag: 'a+' });
                         isReady = true;
@@ -622,7 +623,7 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
                     });
                 });
             } catch (err) {
-                logger.log(err.message);
+                logger.log(err);
                 console.log(err.message);
                 await timeout(pauseTime);
             };
@@ -632,13 +633,14 @@ const bridgeETHFromStarknet = async(privateKeyEthereum, privateKeyStarknet) => {
 
 const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
     const addressEthereum = privateToAddress(privateKeyEthereum);
+    const rpcETH = 'https://rpc.ankr.com/eth';
 
     console.log(chalk.yellow(`Withdraw ${amountETH / 10**18}ETH from Stargate`));
     logger.log(`Withdraw ${amountETH / 10**18}ETH from Stargate`);
     try {
-        await dataWithdrawFromBridge(rpc.Ethereum, amountETH, addressEthereum).then(async(res) => {
+        await dataWithdrawFromBridge(rpcETH, amountETH, addressEthereum).then(async(res) => {
             await getGasPriceEthereum().then(async(fee) => {
-                await sendEVMTX(rpc.Ethereum,
+                await sendEVMTX(rpcETH,
                     2,
                     res.estimateGas,
                     '0',
