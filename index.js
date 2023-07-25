@@ -727,7 +727,7 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         try {
             console.log(chalk.blue(`Wallet ${i+1} Wallet ETH: ${privateToAddress(walletETH[i])}, Wallet Starknet: ${await privateToStarknetAddress(walletSTARK[i])}`));
             logger.log(`Wallet ${i+1} Wallet ETH: ${privateToAddress(walletETH[i])}, Wallet Starknet: ${await privateToStarknetAddress(walletSTARK[i])}`);
-        } catch (err) { throw new Error('Error: Add Private Keys!') };
+        } catch (err) { console.log(err); }
 
         if (index == 0) {
             await bridgeETHToStarknet(walletETH[i], walletSTARK[i]);
