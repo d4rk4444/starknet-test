@@ -699,7 +699,7 @@ const getStarknetAddress = async(privateKeyStarknet) => {
 (async() => {
     const walletETH = parseFile('privateETH.txt');
     const walletSTARK = parseFile('privateArgent.txt');
-    const mainPart = [mySwapStart, starknetId];
+    const mainPart = [mySwapStart, mintStarknetId];
     const stage = [
         'Bridge to Starknet',
         'Main part [MySwap/StarknetId/Nostra Finance]',
@@ -770,8 +770,8 @@ const getStarknetAddress = async(privateKeyStarknet) => {
             await mySwapEnd(walletSTARK[i], 0);
             await timeout(pauseTime);
 
-            console.log(chalk.green(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`));
-            logger.log(`Start Withdraw liquidity/Swap USDC to ETH [MySwap]`);
+            console.log(chalk.green(`Start Bridge to Ethereum`));
+            logger.log(`Start Bridge to Ethereum`);
             await bridgeETHFromStarknet(walletETH[i], walletSTARK[i]);
             await timeout(pauseTime);
         } else if (index == 8) {
