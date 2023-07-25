@@ -727,7 +727,10 @@ const getStarknetAddress = async(privateKeyStarknet) => {
         try {
             console.log(chalk.blue(`Wallet ${i+1} Wallet ETH: ${privateToAddress(walletETH[i])}, Wallet Starknet: ${await privateToStarknetAddress(walletSTARK[i])}`));
             logger.log(`Wallet ${i+1} Wallet ETH: ${privateToAddress(walletETH[i])}, Wallet Starknet: ${await privateToStarknetAddress(walletSTARK[i])}`);
-        } catch (err) { console.log(err); }
+        } catch (err) {
+            console.log(err);
+            return;
+        }
 
         if (index == 0) {
             await bridgeETHToStarknet(walletETH[i], walletSTARK[i]);
