@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { stark, CallData } from 'starknet';
+import { CallData, cairo } from 'starknet';
 import { abiStarknetBridge } from './abi.js';
 import { chainContract } from './other.js';
 
