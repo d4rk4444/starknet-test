@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { stark } from 'starknet';
+import { stark, CallData } from 'starknet';
 import { abiStarknetBridge } from './abi.js';
 import { chainContract } from './other.js';
 
@@ -35,9 +35,9 @@ export const dataBridgeETHFromStarknet = async(toAddress, amount) => {
     return [{
         contractAddress: chainContract.Starknet.StargateBridge,
         entrypoint: "initiate_withdraw",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
             l1_recipient: toAddress,
-            amount: {type: 'struct', low: amount.toString(), high: '0'}
+            amount: cairo.uint256(amount.toString())
         })
     }];
 }
