@@ -153,7 +153,7 @@ export const deployStarknetWallet = async(rpc, privateKeyStarknet) => {
         0
     );
 
-    const accountAX = new Account(provider, AXcontractAddress, privateKeyStarknet);
+    const accountAX = new Account(provider, AXcontractAddress, privateKeyStarknet, '1');
 
     const deployAccountPayload = {
         classHash: argentXproxyClassHash,
@@ -170,7 +170,7 @@ export const sendTransactionStarknet = async(rpc, payload, privateKey) => {
     const provider = new RpcProvider({ nodeUrl: rpc });
 
     const address = await privateToStarknetAddress(privateKey);
-    const account = new Account(provider, address, privateKey);
+    const account = new Account(provider, address, privateKey, '1');
 
     try {
         const executeHash = await account.execute(payload);
@@ -185,7 +185,7 @@ export const sendTransactionStarknet = async(rpc, payload, privateKey) => {
 export const estimateInvokeMaxFee = async(rpc, payload, privateKey) => {
     const provider = new RpcProvider({ nodeUrl: rpc });
     const address = await privateToStarknetAddress(privateKey);
-    const account = new Account(provider, address, privateKey);
+    const account = new Account(provider, address, privateKey, '1');
 
     const res = await account.estimateInvokeFee(payload);
     return cairo.uint256(res.suggestedMaxFee).low;
