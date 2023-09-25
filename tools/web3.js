@@ -153,7 +153,7 @@ export const deployStarknetWallet = async(rpc, privateKeyStarknet) => {
         0
     );
 
-    const accountAX = new Account(provider, AXcontractAddress, privateKeyStarknet, '1');
+    const accountAX = new Account(provider, AXcontractAddress, privateKeyStarknet);
 
     const deployAccountPayload = {
         classHash: argentXproxyClassHash,
