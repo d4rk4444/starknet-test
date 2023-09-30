@@ -1,7 +1,7 @@
 import Web3 from 'web3';
-import { timeout, generateRandomAmount, rpc, chainContract, explorerTx } from './other.js';
-import { abiToken, abiStarknetId } from './abi.js';
-import { Account, Contract, ec, json, stark, Provider, hash, num, SequencerProvider, RpcProvider, CallData, cairo } from 'starknet';
+import { rpc, explorerTx } from './other.js';
+import { abiToken } from './abi.js';
+import { Account, Contract, ec, stark, hash, num, RpcProvider, CallData, cairo } from 'starknet';
 
 //UTILS
 export const privateToAddress = (privateKey) => {
@@ -10,27 +10,22 @@ export const privateToAddress = (privateKey) => {
 }
 
 export const privateToStarknetAddress = async(privateKey) => {
-    //new Argent X account v0.2.3 :
-    const argentXproxyClassHash = "0x25ec026985a3bf9d0cc1fe17326b245dfdc3ff89b8fde106542a3ea56c5a918";
-    const argentXaccountClassHash = "0x033434ad846cdd5f23eb73ff09fe6fddd568284a0fb7d1be20ee482f044dabe2";
+    const argentXaccountClassHash = "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003";
 
-    //const starkKeyPairAX = ec.getKeyPair(privateKey);
-    //const starkKeyPubAX = ec.getStarkKey(starkKeyPairAX); 
     const starkKeyPubAX = ec.starkCurve.getStarkKey(privateKey);
 
-    // Calculate future address of the ArgentX account
     const AXproxyConstructorCallData = CallData.compile({
-        implementation: argentXaccountClassHash,
-        selector: hash.getSelectorFromName("initialize"),
-        calldata: CallData.compile({ signer: starkKeyPubAX, guardian: "0" }),
+        owner: starkKeyPubAX,
+        guardian: 0n
     });
 
     let AXcontractAddress = hash.calculateContractAddressFromHash(
         starkKeyPubAX,
-        argentXproxyClassHash,
+        argentXaccountClassHash,
         AXproxyConstructorCallData,
         0
     );
+
     AXcontractAddress = stark.makeAddress(AXcontractAddress);
 
     return AXcontractAddress;
@@ -156,9 +151,8 @@ export const deployStarknetWallet = async(rpc, privateKeyStarknet) => {
     };
 
     const res = await accountAX.deploySelf(deployAccountPayload);
-    console.log(res);
-    console.log(`✅ ArgentX wallet deployed at: ${res}`);
-    console.log(`Transaction Hash: ${explorerTx.Starknet + AXdAth}`);
+    console.log(`✅ ArgentX wallet deployed at: ${res.contract_address}`);
+    console.log(`Transaction Hash: ${explorerTx.Starknet + res.transaction_hash}`);
 }
 
 export const sendTransactionStarknet = async(rpc, payload, privateKey) => {
