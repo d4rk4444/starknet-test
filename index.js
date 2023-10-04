@@ -636,7 +636,7 @@ const withdrawETHFromBridge = async(amountETH, privateKeyEthereum) => {
     logger.log(`Withdraw ${amountETH / 10**18}ETH from Stargate`);
     try {
         await dataWithdrawFromBridge(rpc.Ethereum, amountETH, addressEthereum).then(async(res) => {
-            await getGasPrice(rpc.Ethereu).then(async(fee) => {
+            await getGasPrice(rpc.Ethereum).then(async(fee) => {
                 await sendEVMTX(rpc.Ethereum,
                     2,
                     res.estimateGas,
